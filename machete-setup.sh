@@ -5,7 +5,7 @@ newb() {
 }
 
 cmt() {
-	f=${1}-${2}.txt
+	f=$(git symbolic-ref --short HEAD)-${1}-${2}.txt
 	touch $f
 	git add $f
 	git commit -m "$*"
@@ -16,6 +16,7 @@ mkdir -p $dir
 cd $dir
 rm -fr /tmp/_git
 mv .git /tmp/_git
+rm -f ./*
 git init
 
 newb root

@@ -99,19 +99,24 @@ We could do all the actions allowed during an interactive rebase, like squashing
 
 Now let's see the status:
 
-TODO pic
+![git machete status](status-2.png)
 
-We can check it explicitly that ??? on the top of ???.
+`adjust-reads-prec` is now in sync with `develop`!
 
-After push ??? but with `--force` ???, the status ???
+Unfortunately, the logical consequence is now that the downstream branch `block-cancel-order` now diverged from `adjust-reads-prec`'s commit history...
+but wait, what prevents us from applying an `update` to othere branches one by one as well?
 
-Let's now check out downstream with a handy shortcut `git machete go down` and rebase the downstream branch `???` on the already rebased `???`:
+Let's go down the git jungle (with a handy shortcut `git machete go down`) and rebase the downstream branches one by one onto their already rebased parents:
 
-TODO pic, also include git push -f
+![Update 3 branches one by one](update-2.png)
 
 ??? TODO zmiana drzewa, pokazac ze wszystko ladnie hula!
 
-TODO Cos na temat (out of sync with origin)
+For the sake of simplicity we didn't include it in the above section, but if we had a corresponding remote repository,
+`git machete status` will also print out a `(out of sync with origin)` annotation next to the branches that are not synced with their remote counterparts and need to be pushed
+(possible a push with `--force`, especially if they were rebased).
+Note that this _remote-syncness_ is completely independent from their _parent-syncness_ - a branch can be in sync with the remote counterpart but not with the local parent/upstream branch, and vice versa.
+
 
 # A few other useful hacks... `diff`, `add`, `reapply` and `slide-out`
 
@@ -136,7 +141,7 @@ This means that rebase changes nothing in relation to the upstream branch - if t
 
 
 `slide-out` subcommand comes somewhat tricky.
-Let's assume the `edit-margin-not-allowed` was already merged to develop.
+Let's assume the `a???` was already merged to develop.
 What we most likely want to do now is to remove `edit-margin-not-allowed` from the tree and then rebase its downstream branch `full-load-gatling`
 onto the original upstream `develop`.
 Since that's a pretty common combination, there's a shortcut for that, `git machete slide-out`.
