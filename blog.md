@@ -1,48 +1,41 @@
 Title: Make your way through git (rebase) jungle with `git-machete`!
 
-<and some jungle-related picture>
+TODO: use some jungle-related picture
 
 TL;DR: `git machete` helps you see what topic branches are out of sync with their parent (upstream) branches and automatically rebase them, especially when some of them are stacked atop other ones.
-
+It's mostly applicable for the git users who work with rebase flow (as opposed to merge-based flows).
 
 # The problem
 
+Let's imagine the following real-life _git jungle_ situation.
 
-The `machete` tool is only applicable for rebase flows - 
-It doesn't really 
-Let's imagine ??? !!!!!!!!rebase flow
-
-?? while the pull request `adjust-reads-prec` -> `develop` was under review, you already started work on another topic branch `block-cancel-order`.
-Unfortunately, the changes on `block-cancel-order` depended on what was already done on `adjust-reads-prec`...
-So you forked the new branch off `adjust-reads-prec` and when the feature was ready, you made another PR, this time `block-cancel-order` -> `adjust-reads-prec`.
+You implemented a fix on a branch `adjust-reads-prec` and made a pull request to `develop`.
+While the PR was under review, you already started work on another topic branch `block-cancel-order`.
+Unfortunately, the changes that you were to introduce on `block-cancel-order` depended on what was already done on `adjust-reads-prec`...
+So you forked the new branch off `adjust-reads-prec` and when the change was ready, you made another PR, this time for `block-cancel-order` to `adjust-reads-prec`.
 In the meantime, the reviewers posted their fixes on the first PR.
 You applied their remarks as `1st round of fixes` on the `adjust-reads-prec` branch.
-Since the review process took some time, you managed to start a couple of new refactors and bugfixes (this time on branches `change-table` and `drop-location-type`),
+Since the review process took some time, you managed to start a couple of new refactors and bugfixes (say, on branches `change-table` and `drop-location-type`),
 but since each of them was dependent on the changes already waiting in review queue, you began stacking branches on top of each other.
 So we ended up with a couple of branches each was dependent on a previous one: `adjust-reads-prec`, `block-cancel-order`, `change-table` and `drop-location-type`.
 
-Let's get this scenario ????
-??? Uwaga zeby za duzo nie bylo tych branchy!!!!!!!!!!!!!!!!!!!!!
-Other than that, you also independently develop a feature `edit-margin-not-allowed`... but nobody really could ????
+Now for the sake of providing a full-fledged example let's include a couple of other branches in our scenario.
+Other than the already mentioned 4 branch chain, you also independently developed a feature `edit-margin-not-allowed` and later derived a branch `full-load-gatling` from that point.
+Also, you had a lonely branch `grep-errors-script` that (fortunately!) nothing depended on, and a `hotfix/remove-trigger` branch, this time on the top of `master`, not `develop`.
 
-Apart from that, also ???
-
-And `hotfix/remove-trigger` on the top of master ???
-
-Now the problem - how to quickly now which of them are in sync with their upstreams?
-And also, how to easily rebase each of branches on the top of its parent, especially if the structure of the branch tree changes?
+Now the problem - how to quickly check now which of our branches are in sync with their parent (aka upstream) branches, which could be simply `develop` or `master`, but also another topic branch?
+And also, how to easily rebase each of branches on the top of its parent, especially after dependencies between branches change from we just described?
 
 
 # Defining a structure for the branches (`edit` command)
 
 
-??? install `git-machete` with #####.
+Okey, let's get our hands dirty... first install `git-machete` with a `curl` one-liner that you can find at [the git machete repo](https://github.com/PawelLipski/git-machete).
+This will copy the `git-machete` Python 2.7 executable to `/usr/local/bin` and set up a corresponding Bash completion script in `/etc/bash_completion.d`.
 
-Let's first specify how we would like to organize our branches - basically, what depends on what.
-Now let's run `git machete edit` or simply open the `.git/machete` file with your favorite editor.
-
-A file like that:
-??? a tree-like structure with `develop`/`master` being the roots ???
+Once we have `git-machete` in our executable `PATH` (and thus have git recognize the `machete` subcommand), let's first specify how we would like to organize our branches - basically, what depends on what.
+Run `git machete edit` or simply open the `.git/machete` file with your favorite editor.
+Paste the following branch tree definition:
 ```
 develop
     adjust-reads-prec
@@ -56,13 +49,16 @@ master
     hotfix/remove-trigger
 ```
 
-Now we've given defined the structure how our branches should relate to each other.
-For each, ???, ??? and ??? are dependent directly on develop, while ??? depends on ???.
+The above content defines a tree-like structure where `develop`/`master` are the roots, `adjust-reads-prec` depends directly on `develop` branch,
+`block-cancel-order` depends directly on `adjust-reads-prec` and thus also (indirectly) on `develop` and so on - just as we defined it verbally in the previous paragraph.
+Tip: don't worry if the tabs got converted into spaces during copy-paste - it's okey to use any kind of indent as long as you use consistently.
 
-That's unfortunately so far not really how branches in our current state of the repository look like.
+Now we've given defined the structure how our branches should relate to each other.
+??????? TODO rephrase !!!!!!! That's unfortunately so far not really how branches in our current state of the repository look like.
 For example, a few pull requests from other team members were merged into `develop` in the meantime,
-so ???, ??? and ??? now need to be synced with `develop` (possibly we have to solve conflicts as well).
-Also, our PR for ??? received a couple of comments which we then fixed on a separate commit... thus throwing ??? out of sync with its parent branch ???
+so `adjust-reads-prec`, `edit-margin-not-allowed` and `grep-errors-script` now need to be synced with `develop` (possibly we'll have to solve some conflicts during the rebase, but that's irrelevant for our discussion).
+Also, our PRs for `adjust-reads-prec` and `change-table` received a couple of comments which we then fixed on a separate commit...
+thus throwing `block-cancel-order` and `drop-location-type`, respectively, out of sync with their upstream branches.
 And... that's exactly a _jungle_ like that where `git machete` comes to rescue.
 
 
