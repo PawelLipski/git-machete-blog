@@ -23,7 +23,7 @@ Now for the sake of providing a full-fledged example let's include a couple of o
 Other than the already mentioned 4 branch chain, you also independently developed a feature `edit-margin-not-allowed` and later derived a branch `full-load-gatling` from that point.
 Also, you had a lonely branch `grep-errors-script` that (fortunately!) nothing depended on, and a `hotfix/remove-trigger` branch, this time on the top of `master`, not `develop`.
 
-Now the problem - how to quickly check now which of our branches are in sync with their parent (aka upstream) branches, which could be simply `develop` or `master`, but also another topic branch?
+Now the problem -- how to quickly check now which of our branches are in sync with their parent (aka upstream) branches, which could be simply `develop` or `master`, but also another topic branch?
 And also, how to easily rebase each of branches on the top of its parent, especially after dependencies between branches change from we just described?
 
 
@@ -70,23 +70,32 @@ Let's now run `git machete status` to see the actual current state of which bran
 ![git machete status](status.png)
 
 Now we see the branch tree with coloring of edges.
-Red edge means ???
-Green edge means ???
+Red edge leading to a child/downstream branch means that this branch is out of sync with its parent/upstream branch (not a direct descendant in commit graph) and needs to be rebased onto the parent.
+Green edge means that the downstream branch remains in sync with the parent.
+`change-table` is underlined since it's the currently checked out branch.
 
-Running `git machete status --list-commits` (or `git machete s -l` for short) also prints the commits introduced on each branch:
+This leads to a somewhat daunting conclusion that only 3 (`change-table`, `full-load-gatling` and `hotfix/remove-trigger`) out of our 8 topic branches are synced with their upstreams branches... but fear not!
+We'll get it sorted soon.
+
+But before we do, let's run `git machete status --list-commits` (or `git machete s -l` for short) to prints the commits introduced on each branch:
 
 ![git machete status --list-commits](status-l.png)
 
-We see that, for example, the branch ??? is out of sync with its upstream branch, ???.
-Let's check out `???` and put it back in sync with `???`.
-!!! add pic (maybe some other formatting? how to include colored text - TODO ask ppl!)
+An important and somewhat non-trivial note here: what you see here for each commit is actually the part of branches history that's unique to this branch -
+i.e. `git machete status` only lists the commits that where most likely introduced on this very branch.
+To determine this piece of history, `git machete` finds a _fork point_ which can be loosely defined as the commit at which the history of the branch actually diverges from the history of any other branch.
+Then, `status --list-commits` lists everything that follows after the fork point.
+Finding this special place in history is more difficult than it could seem at first glance... look at [the section below](#appendix-fork-point---not-so-easy-business) below if you are interested in more details.
 
-This ran an interactive rebase ??? automagically providing the correct parameters. !! resolve possible conflicts etc.
+Let's now check out `adjust-reads-prec` and put it back in sync with `develop`.
+We'll first use a handy subcommand `git machete go <direction>` that helps navigate the tree by checking out a branch specified by direction (`up` in this case, can also be `down`, `next`, `prev` and `root`).
+Then we'll do the actual rebase (with automagically set up parameters, no need to worry about the super-unintuitive `git rebase` CLI!) by `git machete update`.
 
-!!! say sth about fork point!! `the commit at which the history of the branch actually diverges from the history of any other branch`
+![git machete update](update.png)
 
-The way fork point is determined ensures that ??? correctly even after structure of the ladder is modified, e.g. upstream branch is swapped with its downstream.
-For possible ???, see the appendix (link TODO) at the end of this blog post.
+We didn't include that on the above screencast, but in the meantime git displayed a TODO list for the interactive rebase that listed the 3 commits that were about to be moved onto `develop`.
+We could do all the actions allowed during an interactive rebase, like squashing commits, editing the commit messages etc. and of course we could even cancel the entire operation by clearing the TODO lists.
+
 
 Now let's see the status:
 
@@ -102,6 +111,7 @@ TODO pic, also include git push -f
 
 ??? TODO zmiana drzewa, pokazac ze wszystko ladnie hula!
 
+TODO Cos na temat (out of sync with origin)
 
 # A few other useful hacks... `diff`, `add`, `reapply` and `slide-out`
 
@@ -148,21 +158,22 @@ Run `git machete help <command>` for a more specific doc for the given command.
 The fork point commit (the commit at which the history of the branch actually diverges from the history of any other branch) is determined with a heuristics that uses `git reflog`.
 It's generally not trivial to find a correct fork point in every case, so a heurestics is applied that compares the *commit-wise* history (aka `git log`) of the given branch
 with *operation-wise* history (aka `git reflog`) of all other local branches.
-Roughly speaking, the most recent commit `X` from the log of the current branch that also happens to appear on reflog of any other branch `y` is considered the _base_ of the said branch.
-The fact that `X` was found somewhere in the reflog of `y` suggests that it was originally commited on `y` (even though it might no longer appear on `y`'s history due to e.g. rebases).
+Roughly speaking, the most recent commit `C` from the log of the branch `x` that also happens to appear on reflog of any other branch `y` is considered the _fork point_ of the branch `x`.
+The fact that `C` was found somewhere in the reflog of `y` suggests that it was originally commited on `y` (even though it might no longer appear on `y`'s history due to e.g. rebases).
 
 This definition, though working correctly in most real-life cases, might sometimes fail to find a _logically_ correct fork point commit.
 In particular, if certain local branches were already deleted, the determined fork point may be _too early_ in the history than expected.
-??? sentence order?
-Also, it's always possible to check the fork point for a given branch included in the definition file with `git machete fork-point [<branch>]`,
+
+It's always possible to check the fork point for a given branch included in the definition file with `git machete fork-point [<branch>]`,
 or to simply list commits considered by `git machete` to be specific for the each branch with `git machete status --list-commits`.
-Anyway, the potentially effects of ??? are mitigated:
-* The three commands that run `git rebase` under the hood (`reapply`, `slide-out`, `update`) always pass the `--interactive` flag.
-  This enables the user to review the list of commits that are going to be rebased before actual rebase is executed.
-* It's also possible to explicitly specify the fork point for the mentioned three commands with `--fork-point` (`reapply`, `update`) or `--down-fork-point` (`slide-out`).
+
+Anyway, the potentially effects of incorrectly determined fork points are mitigated in at least two ways:
+* The three commands that run `git rebase` under the hood (`reapply`, `slide-out` and most notably `update`) always pass the `--interactive` flag.
+  This enables the user to review the list of commits that are going to be rebased before actual rebase is executed, or even cancel the rebase by clearing out the rebase TODO list.
+* It's also possible to explicitly specify the fork point for the mentioned three commands with `-f`/`--fork-point` (`reapply`, `update`) or `-d`/`--down-fork-point` (`slide-out`).
 
 More git-savvy users may argue that it should be enough to simply use `--fork-point` option of `git rebase`... but the reality turns out to be harder.
 `git merge-base --fork-point` (and thus `git rebase` with the said option) only takes reflog of the one provided upstream branch into account.
 This would work fine as long as nobody changes the structure of the tree in the definition file (i.e. the upstream branch of any branch doesn't change).
-Unfortunately, such tree modifications happen pretty often in real-life development... and thus a custom, more powerful way to find the fork point was necessary.
+Unfortunately, such tree structure modifications happen pretty often in real-life development... and thus a custom, more powerful way to find the fork point was necessary.
 
