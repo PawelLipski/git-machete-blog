@@ -5,7 +5,8 @@ newb() {
 }
 
 cmt() {
-	f=$(git symbolic-ref --short HEAD)-${1}-${2}.txt
+	b=$(git symbolic-ref --short HEAD)
+	f=${b/\//-}-${1}-${2}.txt
 	touch $f
 	git add $f
 	git commit -m "$*"
@@ -46,7 +47,7 @@ git checkout root
 newb master
 	cmt Master commit
 newb hotfix/remove-trigger
-	cmt '[HOTFIX]' Remove the trigger
+	cmt HOTFIX Remove the trigger
 
 cat >.git/machete <<EOF
 develop

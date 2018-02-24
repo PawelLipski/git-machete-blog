@@ -71,7 +71,7 @@ And... that's exactly a _jungle_ like that where `git machete` comes to the resc
 
 Let's now run `git machete status` to see the actual current state of which branches are synced with their upstreams and which ones are not:
 
-![git machete status](status.png)
+![git machete status](status-1.png)
 
 Now we see the branch tree with coloring of edges.
 Red edge leading to a child/downstream branch means that this branch is out of sync with its parent/upstream branch (not a direct descendant in the git commit graph) and needs to be rebased onto the parent.
@@ -83,7 +83,7 @@ We'll get it sorted soon.
 
 But before we do, let's also run `git machete status --list-commits` (or `git machete s -l` for short) to prints the commits introduced on each branch:
 
-![git machete status --list-commits](status-l.png)
+![git machete status --list-commits](status-l-1.png)
 
 An important and somewhat non-trivial note here: what you see here for each commit is actually the part of branch's history that's unique to this branch -
 i.e. `git machete status` only lists the commits that where (most likely) introduced on this very branch and not on any other.
