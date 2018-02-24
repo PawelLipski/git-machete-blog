@@ -103,8 +103,8 @@ Now let's see the status:
 
 `adjust-reads-prec` is now in sync with `develop`!
 
-Unfortunately, the logical consequence is now that the downstream branch `block-cancel-order` now diverged from `adjust-reads-prec`'s commit history...
-but wait, what prevents us from applying an `update` to othere branches one by one as well?
+Unfortunately, the inevitable consequence is that now the downstream branch `block-cancel-order` diverges from `adjust-reads-prec`...
+but wait, what prevents us from applying an `update` to the following downstream branches one by one as well?
 
 Let's go down the git jungle (with a handy shortcut `git machete go down`) and rebase the downstream branches one by one onto their already rebased parents:
 
@@ -138,8 +138,8 @@ Once we modified the definition file, `git machete status` marked the edge betwe
 This means that the downstream branch (`change-table`) is still in sync with upstream (`develop`), but the upstream branch tip is not the fork point of the downstream branch.
 Translating from git-ese to English, there are probably some other branches on the way between `develop` and `change-table`... and that's exactly the case now.
 You won't come across the yellow edges very often in real-life work with `git machete` -- it can mostly happen when the tree structure has been modified like we just did a moment ago.
-Anyway, since the edge is not green, you should now run `git machete update` to put `change-table` in the direct sync with `develop`.
-Most likely you'll need to resolve the conflicts (since you're now basically trying to skip the commits introduced by `adjust-reads-prec` and `block-cancel-order` from the history)
+Anyway, since the edge is not green, you should now run `git machete update` to rebase `change-table` directly onto `develop`.
+Most likely you'll need to resolve the conflicts (since you're now basically trying to skip the commits introduced by `adjust-reads-prec` and `block-cancel-order` from the history of `change-table`)
 and you'll surely need to update `drop-location-type` onto `change-table`... but anyway, all it takes is just two `git machete update`s instead of complicated `git rebase`s with 3 parameters!
 
 For the sake of simplicity we didn't mention it in the above section, but if we had a corresponding remote repository,
@@ -151,38 +151,39 @@ Also, to be synced with remote, branch must be _commit-wise equal_ to the remote
 
 # A few other useful hacks... `diff`, `add`, `reapply` and `slide-out`
 
+To see the changes introduced on the current branch, run `git machete diff`.
+This will compare the current working directory to the fork point commit.
+You can also provide a branch parameter (`git machete diff <branch>`) to see the diff of the given branch against its fork point.
 
-To see the changes introduced since the fork point of the current branch, run `git machete diff`.
-
-`git machete go` helps quickly navigate between branches in the tree.
-`git machete go up` and `git machete go down` check out the upstream branch or downstream branch of the current branch (if defined).
-`git machete go root` goes all the way upstream to the root of the tree (where a `develop` or `master` branch is usually located).
-`git machete go prev` and `git machete go next` switch to the previous or next branch in the order of definition (or simply just previous/next line in the ladder definition file).
-
-`git machete add --onto [<target-upstream>] [<branch>]` pushes the branch ???
-Let's now add a newly created branch `ignore-whitespace` onto the existing branch `change-table` and see the status:
-
-TODO shell + status now!
-
+`git machete add --onto [<target-upstream>] [<branch>]` pushes the specified branch (or the current one, if skipped) onto the given target upstream branch.
 The same effect can as well be achieved by editing the definition file `.git/machete` manually e.g. with `git machete edit`.
+For example, if we run `git branch ignore-whitespace` and then `git machete add --onto block-cancel-order ignore-whitespace`, we'll end up with the following definition file:
 
+```
+develop
+    adjust-reads-prec
+        block-cancel-order
+			ignore-whitespace
+	change-table
+		drop-location-type
+    edit-margin-not-allowed
+        full-load-gatling
+    grep-errors-script
+master
+    hotfix/remove-trigger
+```
 
-`reapply` is similar to `update`, but instead of rebasing the commits onto upstream branch, it instead rebases onto fork point.
-This means that rebase changes nothing in relation to the upstream branch - if the branches weren't in sync before, they still won't be.
+`reapply` is similar to `update`, but instead of rebasing the commits onto upstream branch, it instead rebases them onto fork point.
+This means that the rebase operaion will change nothing in relation to the upstream branch - if the branches weren't in sync before, they still won't be.
+The main use of `reapply` is squashing or otherwise reorganizing the commits on the current branch rather than moving those commits onto the upstream branch (as `update` does).
 
-
-`slide-out` subcommand comes somewhat tricky.
-Let's assume the `a???` was already merged to develop.
+`slide-out` subcommand is somewhat tricky.
+Let's assume the `edit-margin-not-allowed` branch was already merged to develop.
 What we most likely want to do now is to remove `edit-margin-not-allowed` from the tree and then rebase its downstream branch `full-load-gatling`
-onto the original upstream `develop`.
-Since that's a pretty common combination, there's a shortcut for that, `git machete slide-out`.
-Let's check out `edit-margin-not-allowed` and run the command:
+onto the `edit-margin-not-allowed` original upstream `develop`.
+Since that's a pretty common combination of actions, there's a shortcut for that, `git machete slide-out`:
 
-TODO pic
-
-and then after completing the rebase we get the following tree:
-
-TODO pic
+![git machete slide-out](slide-out.png)
 
 All commands supported by `git machete` can be found under `git machete help`.
 Run `git machete help <command>` for a more specific doc for the given command.
