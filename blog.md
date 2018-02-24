@@ -55,7 +55,7 @@ master
 The above content defines a tree-like structure where `develop`/`master` are the roots.
 `adjust-reads-prec` depends directly on `develop` branch, `block-cancel-order` depends directly on `adjust-reads-prec` and thus also (indirectly) on `develop` and so on -
 just as we defined it verbally earlier in the post.
-Tip: don't worry if the tabs got converted into spaces during copy-paste - it's okey to use any kind of indent as long as you use consistently.
+Tip: if it comes to indent - it's okey to use tabs or any number of spaces as long as you use consistently.
 
 Now we've defined the structure how our branches should relate to each other.
 Unfortunately, some of the branches aren't really in sync with the defined structure.
@@ -127,8 +127,8 @@ To make the process as painless as possible, let's modify the definition file wi
 develop
     adjust-reads-prec
         block-cancel-order
-	change-table
-		drop-location-type
+    change-table
+        drop-location-type
     edit-margin-not-allowed
         full-load-gatling
     grep-errors-script
@@ -168,9 +168,9 @@ For example, if we run `git branch ignore-whitespace` and then `git machete add 
 develop
     adjust-reads-prec
         block-cancel-order
-			ignore-whitespace
-	change-table
-		drop-location-type
+            ignore-whitespace
+    change-table
+        drop-location-type
     edit-margin-not-allowed
         full-load-gatling
     grep-errors-script
