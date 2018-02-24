@@ -110,12 +110,43 @@ Let's go down the git jungle (with a handy shortcut `git machete go down`) and r
 
 ![Update 3 branches one by one](update-2.png)
 
-??? TODO zmiana drzewa, pokazac ze wszystko ladnie hula!
+We see that all the 4 branches in the longest chain are synced to each other and to develop.
+In fact, we can also see the commit history with a graphic tool (here we use TUI-ish `tig`, but it could as well be `gitk`, `gitg` or IntelliJ's CVS tools).
 
-For the sake of simplicity we didn't include it in the above section, but if we had a corresponding remote repository,
-`git machete status` will also print out a `(out of sync with origin)` annotation next to the branches that are not synced with their remote counterparts and need to be pushed
-(possible a push with `--force`, especially if they were rebased).
-Note that this _remote-syncness_ is completely independent from their _parent-syncness_ - a branch can be in sync with the remote counterpart but not with the local parent/upstream branch, and vice versa.
+![tig output](tig.png)
+
+As a cherry on the top - let's now assume somebody on the team says they need to merge the `change-table` branch as soon as possible and they can't wait before `adjust-reads-prec` and `block-cancel-order`.
+You're not very willing to do so since the latter branches introduced some nice helpers than you used in `change-table`... but you're basically left with no choice.
+To make the process as easy as possible, let's modify the definition file with `git ladder edit`:
+
+```
+develop
+    adjust-reads-prec
+        block-cancel-order
+	change-table
+		drop-location-type
+    edit-margin-not-allowed
+        full-load-gatling
+    grep-errors-script
+master
+    hotfix/remove-trigger
+```
+
+![git machete status](status-l-3.png)
+
+Once we modified the definition file, `git machete status` marked the edge between `develop` and `change-table` as yellow.
+This means that the downstream branch (`change-table`) is still in sync with upstream (`develop`), but the upstream branch tip is not the fork point of the downstream branch.
+Translating from git-ese to English, there are probably some other branches on the way between `develop` and `change-table`... and that's exactly the case now.
+You won't come across the yellow edges very often in real-life work with `git machete` -- it can mostly happen when the tree structure has been modified like we just did a moment ago.
+Anyway, since the edge is not green, you should now run `git machete update` to put `change-table` in the direct sync with `develop`.
+Most likely you'll need to resolve the conflicts (since you're now basically trying to skip the commits introduced by `adjust-reads-prec` and `block-cancel-order` from the history)
+and you'll surely need to update `drop-location-type` onto `change-table`... but anyway, all it takes is just two `git machete update`s instead of complicated `git rebase`s with 3 parameters!
+
+For the sake of simplicity we didn't mention it in the above section, but if we had a corresponding remote repository,
+`git machete status` will also print out a `(out of sync with origin)` annotation next to the branches that are not synced with their remote counterparts.
+They most likely need to be pushed to the remote at some point (possible with `--force`, in particular if they were rebased since the last push).
+Note that this notion of _remote-syncness_ is completely independent from their _parent-syncness_ - a branch can be in sync with the remote counterpart but not with the local parent/upstream branch, and vice versa.
+Also, to be synced with remote, branch must be _commit-wise equal_ to the remote counterpart, while for parent-syncness it's enough for branch commit to be _a direct descendant_ of the parent branch commit.
 
 
 # A few other useful hacks... `diff`, `add`, `reapply` and `slide-out`
