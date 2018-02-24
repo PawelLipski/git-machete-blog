@@ -1,4 +1,4 @@
-Title: Make your way through git (rebase) jungle with `git machete`!
+# Make your way through git (rebase) jungle with `git machete`!
 
 TODO: use some jungle-related picture, like [this one](https://goo.gl/images/1i7Uqf) if copyright allows
 
@@ -6,37 +6,40 @@ TL;DR: `git machete` helps you see what topic branches are out of sync with thei
 It's mostly applicable for the git users who work with rebase flows (as opposed to merge-based flows).
 
 
-# The problem
+## The problem
 
 
 Let's imagine the following real-life _git jungle_ situation.
 
 You implemented a fix on a branch `adjust-reads-prec` and made a pull request to `develop`.
 While the PR was under review, you already started work on another topic branch `block-cancel-order`.
+
 Unfortunately, the changes that you were to introduce on `block-cancel-order` depended on what was already done on `adjust-reads-prec`...
 So you forked the new branch off `adjust-reads-prec` and when the change was ready, you made another PR, this time for `block-cancel-order` to `adjust-reads-prec`.
+
 In the meantime, the reviewers posted their fixes on the first PR.
 You applied their remarks as a `1st round of fixes` commit on the `adjust-reads-prec` branch.
 
-Since the review process took some time, you managed to start a couple of new refactors and bugfixes (say, on branches `change-table` and `drop-location-type`),
-but since each of them was dependent on the changes already waiting in review queue, you began stacking branches on top of each other.
+Since the review process took some time, you managed to start a couple of new refactors and bugfixes (say, on branches `change-table` and `drop-location-type`).
+As each of them was dependent on the changes already waiting in review queue, you began stacking another branches on top of each other.
 So we ended up with a couple of branches, each dependent on a previous one: `adjust-reads-prec`, `block-cancel-order`, `change-table` and `drop-location-type`.
 
 Now for the sake of providing a full-fledged example, let's include a couple of other branches in our scenario.
+
 Other than the already mentioned 4-branch chain, you also independently developed a feature `edit-margin-not-allowed` and later derived a branch `full-load-gatling` from that point.
 Also, you created a branch `grep-errors-script` that (fortunately!) nothing depended on, and a `hotfix/remove-trigger` branch, but on the top of `master`, not `develop`.
 
-Now the problem - how to quickly check now which of our branches are in sync with their parent (aka upstream) branches, which for some is simply `develop` or `master`, but for others - some other topic branch?
-And also, how to easily rebase each of branches on the top of its parent, especially after dependencies between branches change from we just described?
+Now the problem - how to quickly check now which of our branches are in sync with their parent (aka upstream) branches, which for some is simply `develop` or `master`, but for others - another topic branch?
+And also, how to easily rebase each of branches on the top of its parent, especially after dependencies between branches change from the above description, some branches get deleted and so on?
 
 
-# Defining a structure for the branches (`edit` subcommand)
+## Defining a structure for the branches (`edit` subcommand)
 
 
-Okey, let's get our hands dirty... first install `git-machete` with a `curl` one-liner that you can find at [the git machete repo](https://github.com/PawelLipski/git-machete).
+Okey, let's get our hands dirty... first install `git-machete` with a `curl` one-liner that you can find in the README of [the git machete repo](https://github.com/PawelLipski/git-machete).
 This will copy the `git-machete` Python 2.7 executable to `/usr/local/bin` and set up a corresponding Bash completion script in `/etc/bash_completion.d`.
 
-Once we have `git-machete` in our executable `PATH` (and thus git already recognizes the `machete` subcommand), let's first specify how we like to organize our branches - basically, what depends on what.
+Once we have `git-machete` in our executable `PATH` (and thus git already recognizes the `machete` subcommand), let's specify how we like to organize our branches - basically, what depends on what.
 Run `git machete edit` or simply open the `.git/machete` file with your favorite editor.
 Paste the following branch tree definition:
 ```
@@ -55,44 +58,47 @@ master
 The above content defines a tree-like structure where `develop`/`master` are the roots.
 `adjust-reads-prec` depends directly on `develop` branch, `block-cancel-order` depends directly on `adjust-reads-prec` and thus also (indirectly) on `develop` and so on -
 just as we defined it verbally earlier in the post.
-Tip: if it comes to indent - it's okey to use tabs or any number of spaces as long as you use consistently.
 
-Now we've defined the structure how our branches should relate to each other.
+(Tip: if it comes to indent - it's okey to use tabs or any number of spaces as long as you use consistently).
+
+Now we've defined the structure of how the branches should relate to each other.
 Unfortunately, some of the branches aren't really in sync with the defined structure.
 For example, a few pull requests from other team members were merged into `develop` in the meantime,
 so `adjust-reads-prec`, `edit-margin-not-allowed` and `grep-errors-script` now need to be synced with `develop` (possibly we'll have to solve some conflicts during the rebase, but that's irrelevant for our discussion).
-Also, our PRs for `adjust-reads-prec` and `change-table` received a couple of comments which we then fixed on a separate commit...
+Also, our PRs for `adjust-reads-prec` and `change-table` received a couple of comments which we then fixed on separate commits...
 thus throwing `block-cancel-order` and `drop-location-type`, respectively, out of sync with their upstream branches.
 And... that's exactly a _jungle_ like that where `git machete` comes to the rescue.
 
 
-# What's macheting really about... `status`, `go` and `update`
+## What's macheting really about... `status`, `go` and `update`
 
 
-Let's now run `git machete status` to see the actual current state of which branches are synced with their upstreams and which ones are not:
+Let's now run `git machete status` to see the actual current state of which branches are synced with their upstreams and which ones aren't:
 
 ![git machete status](status-1.png)
 
-Now we see the branch tree with coloring of edges.
-Red edge leading to a child/downstream branch means that this branch is out of sync with its parent/upstream branch (not a direct descendant in the git commit graph) and needs to be rebased onto the parent.
-Green edge, on the other hand, means that the downstream branch remains in sync with the parent.
+What we see now is basically a neatly printed branch tree, with edges colored red or green.
 `change-table` is underlined since it's the currently checked out branch.
+
+Red edge leading to a child/downstream branch means that this branch is out of sync with its parent/upstream branch (not a direct descendant in the git commit graph) and needs to be rebased onto the parent.
+
+Green edge, on the other hand, means that the downstream branch remains in sync with the parent.
 
 This leads to a somewhat disappointing conclusion that only 3 (`change-table`, `full-load-gatling` and `hotfix/remove-trigger`) out of our 8 topic branches are synced with their upstreams branches... but fear not!
 We'll get it sorted soon.
 
-But before we do, let's also run `git machete status --list-commits` (or `git machete s -l` for short) to prints the commits introduced on each branch:
+But before we do, let's also run `git machete status --list-commits` (or `git machete s -l` for short) to print the commits introduced on each branch:
 
 ![git machete status --list-commits](status-l-1.png)
 
-An important and somewhat non-trivial note here: what you see here for each commit is actually the part of branch's history that's unique to this branch -
-i.e. `git machete status` only lists the commits that where (most likely) introduced on this very branch and not on any other.
+An important and somewhat non-trivial note here: what you see here for each commit is actually the part of branch's history that's unique to this branch.
+In other words, for each branch `git machete status --list-commits` only lists the commits that where (most likely) introduced on this very branch and not on any other.
 To determine this piece of commit history, `git machete` finds a _fork point_ which can be loosely defined as the commit at which the history of the branch actually diverges from the history of any other branch.
 Then, `status --list-commits` lists everything that follows after the fork point.
-Finding this special place in history is more difficult than it could seem at first glance... look at [the section below](#appendix-fork-point---not-so-easy-business) if you are interested in more details.
+Finding this special place in history is more difficult than it could seem at first glance... look at [the appendix section below](#appendix-fork-point---not-so-easy-business) if you are interested in more details.
 
 Let's now check out `adjust-reads-prec` and put it back in sync with `develop`.
-We'll first use a handy subcommand `git machete go <direction>` that helps navigate the tree by checking out a branch specified by direction (`up` in this case, can also be `down`, `next`, `prev` and `root`).
+We'll first use a handy subcommand `git machete go <direction>` that helps navigate the tree by checking out a branch specified by direction (`up` in this case, can also be `down`, `next`, `prev` or `root`).
 Then we'll do the actual rebase (with automagically set up parameters, no need to worry about the super-unintuitive `git rebase` CLI!) by `git machete update`.
 
 ![git machete update](update.png)
@@ -114,7 +120,7 @@ Let's go down the git jungle (with a handy shortcut `git machete go down`) and r
 ![Update 3 branches one by one](update-2.png)
 
 We see that now all the 4 branches in the longest chain are synced to each other and to develop.
-In fact, we can also see the commit history with a graphic tool (here we use TUI-ish `tig`, but it could as well be `gitk`, `gitg` or IntelliJ's CVS tools) to confirm that all branches are neatly lined up.
+In fact, we can also see the commit history with a graphic tool (here we use TUI-ish `tig`, but it could as well be `gitk`, `gitg` or IntelliJ's git tools) to confirm that all branches are neatly lined up.
 
 ![tig output](tig.png)
 
@@ -154,7 +160,7 @@ Note that this notion of _remote-syncness_ is completely orthogonal to their _pa
 Also, to be considered in sync with remote, branch must be _commit-wise equal_ to the remote counterpart, while for parent-syncness it's enough for branch commit to be a _direct descendant_ of the parent branch commit.
 
 
-# A few other useful hacks... `diff`, `add`, `reapply` and `slide-out`
+## A few other useful hacks... `diff`, `add`, `reapply` and `slide-out`
 
 To see the changes introduced on the current branch, run `git machete diff`.
 This will compare the current working directory to the fork point commit of the current branch.
@@ -179,7 +185,7 @@ master
 ```
 
 `reapply` is similar to `update`, but instead of rebasing the commits onto the upstream branch, it instead (also interactively) rebases them onto fork point of the current branch.
-This means that the rebase operaion will change nothing in relation to the upstream branch - if the branches weren't in sync before, they still won't be.
+This means that the rebase operation will change nothing in relation to the upstream branch - if the branches weren't in sync before, they still won't be.
 The main use of `reapply` is squashing or otherwise reorganizing the commits _within the current branch_ rather than moving those commits _onto the upstream branch_ (as `update` does).
 
 `slide-out` subcommand, in turn, is somewhat tricky.
@@ -193,18 +199,20 @@ Since that's a pretty common combination of actions, there's a shortcut for that
 All commands supported by `git machete` can be found under `git machete help`.
 Run `git machete help <command>` for a more specific documentation for the given command.
 
+As a general parting thought - whatever goes wrong, always remember you can turn to `git reflog [<branch>]` as a last resort... nothing that's committed in git gets lost (at least not so easily).
 
-# Appendix: fork point - not so easy business...
+
+## Appendix: fork point - not so easy business...
 
 
 The fork point commit (the commit at which the history of the branch diverges from the history of any other branch) is determined with a heuristics that uses `git reflog`.
 The *commit-wise* history (aka `git log`) of the given branch is compared with *operation-wise* history (aka `git reflog`) of all other local branches.
 Roughly speaking, the most recent commit `C` from the log of the branch `x` that also happens to appear on reflog of any other branch `y` is considered the _fork point_ of the branch `x`.
-Intuitively, the fact that `C` was found somewhere in the reflog of `y` suggests that it was originally commited on `y` and not on `x`
+Intuitively, the fact that `C` was found somewhere in the reflog of `y` suggests that it was originally committed on `y` and not on `x`
 (even though it might no longer appear on `y`'s history due to e.g. rebases or commit amends).
 
 This definition, though working correctly in most real-life cases, might still sometimes fail to find a _logically_ correct fork point commit.
-In particular, if certain local branches were already deleted, the determined fork point may be determined _too early_ in the history than expected.
+In particular, if certain local branches were already deleted, the fork point may be found _too early_ in the history compared to what's expected.
 
 It's always possible to explicitly check what a fork point for a given branch would be through `git machete fork-point [<branch>]`,
 or to simply list commits considered by `git machete` to be "specific" to the each branch with `git machete status --list-commits`.
@@ -214,7 +222,7 @@ Anyway, the potentially undesired effects of `git machete` failing to find a cor
   This enables the user to review the list of commits that are going to be rebased before actual rebase is executed, or even cancel the rebase by clearing out the rebase TODO list.
 * It's also possible to explicitly specify the fork point for the mentioned three commands with `-f`/`--fork-point` (`reapply`, `update`) or `-d`/`--down-fork-point` (`slide-out`).
 
-More git-savvy users may argue that it should be enough to simply use `--fork-point` option of `git rebase`... but the reality turns out to be tougher.
+More git-savvy users may argue that it should be enough to simply use `--fork-point` option of `git rebase`... but the reality turns out to be harder than that.
 `git merge-base --fork-point` (and thus `git rebase` with the said option) only takes reflog of the one provided upstream branch into account.
 This would work fine as long as nobody disturbs the structure of the tree in the definition file (i.e. the upstream branch of any branch doesn't change).
 Unfortunately, as mentioned before in this post, such tree structure modifications happen pretty often in real-life development... and thus a custom, more powerful way to find the fork point was necessary.
