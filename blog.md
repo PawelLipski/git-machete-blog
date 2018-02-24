@@ -119,7 +119,7 @@ Let's go down the git jungle (with a handy shortcut `git machete go down`) and r
 
 ![Update 3 branches one by one](update-2.png)
 
-We see that now all the 4 branches in the longest chain are synced to each other and to develop.
+We see that now all the 4 branches in the longest chain are synced to each other and to `develop`.
 In fact, we can also see the commit history with a graphic tool (here we use TUI-ish `tig`, but it could as well be `gitk`, `gitg` or IntelliJ's git tools) to confirm that all branches are neatly lined up.
 
 ![tig output](tig.png)
@@ -189,7 +189,7 @@ This means that the rebase operation will change nothing in relation to the upst
 The main use of `reapply` is squashing or otherwise reorganizing the commits _within the current branch_ rather than moving those commits _onto the upstream branch_ (as `update` does).
 
 `slide-out` subcommand, in turn, is somewhat tricky.
-Let's assume the `edit-margin-not-allowed` branch was already merged to develop and we no longer need retain it locally.
+Let's assume the `edit-margin-not-allowed` branch was already merged to develop and we no longer need to retain it locally.
 What we most likely want to do now is remove `edit-margin-not-allowed` from the tree and then rebase its downstream branch `full-load-gatling`
 onto the `edit-margin-not-allowed`'s original upstream (i.e. `develop`).
 Since that's a pretty common combination of actions, there's a shortcut for that, `git machete slide-out [<branch>]`:
@@ -199,7 +199,7 @@ Since that's a pretty common combination of actions, there's a shortcut for that
 All commands supported by `git machete` can be found under `git machete help`.
 Run `git machete help <command>` for a more specific documentation for the given command.
 
-As a general parting thought - whatever goes wrong, always remember you can turn to `git reflog [<branch>]` as a last resort... nothing that's committed in git gets lost (at least not so easily).
+As a general parting thought - if anything goes wrong during the rebase, always remember you can turn to `git reflog [<branch>]` for help... nothing that's committed in git gets lost (at least not easily).
 
 
 ## Appendix: fork point - not so easy business...
@@ -209,7 +209,7 @@ The fork point commit (the commit at which the history of the branch diverges fr
 The *commit-wise* history (aka `git log`) of the given branch is compared with *operation-wise* history (aka `git reflog`) of all other local branches.
 Roughly speaking, the most recent commit `C` from the log of the branch `x` that also happens to appear on reflog of any other branch `y` is considered the _fork point_ of the branch `x`.
 Intuitively, the fact that `C` was found somewhere in the reflog of `y` suggests that it was originally committed on `y` and not on `x`
-(even though it might no longer appear on `y`'s history due to e.g. rebases or commit amends).
+(even though it might no longer appear on `y`'s log due to e.g. rebases or commit amends).
 
 This definition, though working correctly in most real-life cases, might still sometimes fail to find a _logically_ correct fork point commit.
 In particular, if certain local branches were already deleted, the fork point may be found _too early_ in the history compared to what's expected.
