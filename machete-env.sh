@@ -24,7 +24,6 @@ newb develop
 	cmt Develop commit
 newb adjust-reads-prec
 	cmt Adjust JSON Reads precision
-	cmt 1st round of fixes
 newb block-cancel-order
 	cmt Implement blocking order cancellation
 newb change-table
@@ -60,4 +59,18 @@ develop
 master
     hotfix/remove-trigger
 EOF
-git machete status -l
+
+# Let's spoil sth...
+git checkout develop
+cmt Other develop commit
+git checkout adjust-reads-prec
+cmt 1st round of fixes
+cmt 2nd round of fixes
+git checkout change-table
+cmt 1st round of fixes
+
+echo
+echo
+git machete status $1
+echo
+echo

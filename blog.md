@@ -65,16 +65,17 @@ And... that's exactly a _jungle_ like that where `git machete` comes to rescue.
 # What's macheting really about... `status`, `go` and `update` subcommands
 
 
-Let's now run `git machete status` and see the result:
+Let's now run `git machete status` to see the actual current state of which branches are synced with their upstreams and which ones are not:
 
-!!! add the picture
+![git machete status](status.png)
 
 Now we see the branch tree with coloring of edges.
 Red edge means ???
 Green edge means ???
-Also, there is this (out of sync with origin) ??? message
 
 Running `git machete status --list-commits` (or `git machete s -l` for short) also prints the commits introduced on each branch:
+
+![git machete status --list-commits](status-l.png)
 
 We see that, for example, the branch ??? is out of sync with its upstream branch, ???.
 Let's check out `???` and put it back in sync with `???`.
