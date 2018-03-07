@@ -2,33 +2,37 @@
 
 TODO: use some jungle-related picture, like [this one](https://goo.gl/images/1i7Uqf) if copyright allows
 
-TL;DR: If you work a with a git rebase flow, `git machete` will (vastly!) help you manage the jungle of branches stacking on top of each other when you're, for example, waiting for PR approval.
+TL;DR: If you work a with a git rebase flow, `git machete` will (vastly!) help you manage the jungle of branches stacking on top of each other when you're, for example, working on a couple of different PRs in parallel.
 
 
 ## The problem
 
+In a day-to-day development it happens pretty often that for various reasons we have to work with multiple git branches at the same time.
+We'll show a repository with a bunch of topic branches so as to demonstrate the typical problems that can happen under such conditions
+and how a few nifty cuts of `git machete` will prevent us from getting into a complete _git jungle_.
+The example we're about to provide is deliberately exaggerated - in fact, most likely you'll have at most 3 or 4 branches developed simultaneously.
+Still, `git machete` is vastly helpful even in the less complex scenarios.
 
-Let's imagine the following real-life _git jungle_ situation.
-
-You implemented a fix on a branch `adjust-reads-prec` and made a pull request to `develop`.
+Let's assume you implemented a fix on a branch `adjust-reads-prec` (the actual content of the fix is completely irrelevant) and made a pull request to `develop`.
 While the PR was under review, you started work on another topic branch `block-cancel-order`.
 
-Unfortunately, the changes that you intended to introduce on `block-cancel-order` depended on what had already been done on `adjust-reads-prec`...
-So you forked the new branch off `adjust-reads-prec` and when the change was ready, you made another PR, this time for `block-cancel-order` to `adjust-reads-prec`.
+Unfortunately, changes that you intended to introduce on `block-cancel-order` depended on what had already been done on `adjust-reads-prec`...
+So you forked a new branch (`block-cancel-order`) off `adjust-reads-prec` and when the change was ready, you made another PR, this time for `block-cancel-order` to `adjust-reads-prec`.
 
-In the meantime, the reviewers posted their fixes on the first PR.
+In the meantime, reviewers posted their comments on the first PR.
 You applied their remarks as a `1st round of fixes` commit on the `adjust-reads-prec` branch.
 
-Since the review process took some time, you managed to start a couple of new refactors and bug fixes (say, on branches `change-table` and `drop-location-type`).
-As each of them was dependent on the changes already waiting in the review queue, you began stacking another branches on top of each other.
-So you ended up with a couple of branches, each dependent on a previous one: `adjust-reads-prec`, `block-cancel-order`, `change-table` and `drop-location-type`.
+In most cases it's rather unusual to have more than 2 branches stacked on the top of each other, but just for the sake of completeness, let's now make this chain longer.
+You developed a couple of new refactors and bug fixes - say, on branches `change-table` and `drop-location-type`.
+As each of them was dependent on changes already waiting in the review queue, you began stacking another branches on top of each other.
+You ended up having 4 branches in the chain, each dependent on a previous one: `adjust-reads-prec`, `block-cancel-order`, `change-table` and `drop-location-type`.
 
-Now for the sake of providing a full-fledged example, let's include a couple of other branches in our scenario.
-
-Other than the already mentioned 4-branch chain, you also independently developed a feature `edit-margin-not-allowed` and later derived a branch `full-load-gatling` from that point.
+Now for the sake of providing a full-fledged example, let's also add a couple of other branches (not related to the 4-branch chain) into our scenario.
+Let's assume you also independently developed a feature `edit-margin-not-allowed` and later derived a branch `full-load-gatling` from that point.
 Also, you created a branch `grep-errors-script` that (fortunately!) nothing depended on, and a `hotfix/remove-trigger` branch, but on the top of `master`, not `develop`.
 
-Now the problem: how to quickly check now which of our branches are in sync with their parent (aka upstream) branches, which for some is simply `develop` or `master`, but for others - another topic branch?
+Now the problem: how to quickly check now which of our branches are in sync with their parent (aka upstream) branches?
+Note that for some of them (like `adjust-reads-prec` or `hotfix/remove-trigger`) this parent would be simply `develop` or `master`, but for others (like `change-table`) this would be another topic branch.
 Also, how to easily rebase each branch on the top of its parent, especially when dependencies between branches have changed from the description above, or some branches have been deleted, and so on?
 
 
@@ -103,7 +107,7 @@ Then we'll do the actual rebase (with automagically set up parameters, no need t
 
 ![git machete update](update.png)
 
-We didn't include that on the above screenshot, but in the meantime git displayed a standard interactive rebase TODO list that listed the 3 commits that were about to be moved onto `develop`.
+We didn't include this in the screenshot above, but in the meantime git has displayed a standard interactive rebase TODO list that includes the 3 commits that were about to be moved onto `develop`.
 We could do all the actions allowed during an interactive rebase, such as squashing commits, editing the commit messages etc.
 Of course, we could even cancel the entire operation by clearing the rebase TODO list.
 
@@ -125,9 +129,9 @@ In fact, we can also see the commit history with a graphical tool (here we use t
 
 ![tig output](tig.png)
 
-As the cherry on top, let's now assume somebody on the team says they need to merge the `change-table` branch as soon as possible
-and they can't wait for `adjust-reads-prec` and `block-cancel-order` to pass the review and get merged first.
-You're not very willing to do so since the two mentioned upstream branches introduced some nice helpers that you later used in `change-table`... but you're basically left with no choice.
+As the cherry on top, let's now assume somebody that we need to merge the `change-table` branch to `develop` as soon as possible
+and we can't wait for `adjust-reads-prec` and `block-cancel-order` to get merged first.
+Unfortunately, the two mentioned upstream branches introduced some nice helpers that you later used in `change-table`.
 To make the process as painless as possible, let's modify the definition file with `git ladder edit`:
 
 ```
