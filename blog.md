@@ -7,32 +7,32 @@ TL;DR: If you work a with a git rebase flow, `git machete` will (vastly!) help y
 
 ## The problem
 
-In a day-to-day development it happens pretty often that for various reasons we have to work with multiple git branches at the same time.
-We'll show a repository with a bunch of topic branches so as to demonstrate the typical problems that can happen under such conditions
+In day-to-day development it is common that for various reasons we have to work with multiple git branches at the same time.
+We'll show a repository with a bunch of topic branches so as to demonstrate the typical problems that can occur under such conditions
 and how a few nifty cuts of `git machete` will prevent us from getting into a complete _git jungle_.
 The example we're about to provide is deliberately exaggerated - in fact, most likely you'll have at most 3 or 4 branches developed simultaneously.
-Still, `git machete` is vastly helpful even in the less complex scenarios.
+Still, `git machete` is significantly helpful, even in less complex scenarios.
 
-Let's assume you implemented a fix on a branch `adjust-reads-prec` (the actual content of the fix is completely irrelevant) and made a pull request to `develop`.
+Let's assume you have implemented a fix on a branch `adjust-reads-prec` (the actual content of the fix is completely irrelevant) and made a pull request to `develop`.
 While the PR was under review, you started work on another topic branch `block-cancel-order`.
 
-Unfortunately, changes that you intended to introduce on `block-cancel-order` depended on what had already been done on `adjust-reads-prec`...
-So you forked a new branch (`block-cancel-order`) off `adjust-reads-prec` and when the change was ready, you made another PR, this time for `block-cancel-order` to `adjust-reads-prec`.
+Unfortunately, the changes that you intended to introduce on `block-cancel-order` depended on what had already been done on `adjust-reads-prec`...
+So you forked a new branch (`block-cancel-order`) off `adjust-reads-prec` and, when the change was ready, you made another PR, this time for `block-cancel-order` to `adjust-reads-prec`.
 
 In the meantime, reviewers posted their comments on the first PR.
 You applied their remarks as a `1st round of fixes` commit on the `adjust-reads-prec` branch.
 
-In most cases it's rather unusual to have more than 2 branches stacked on the top of each other, but just for the sake of completeness, let's now make this chain longer.
+In most cases it's rather unusual to have more than 2 branches stacked on top of each other, but for the sake of completeness let's now make this chain longer.
 You developed a couple of new refactors and bug fixes - say, on branches `change-table` and `drop-location-type`.
 As each of them was dependent on changes already waiting in the review queue, you began stacking another branches on top of each other.
-You ended up having 4 branches in the chain, each dependent on a previous one: `adjust-reads-prec`, `block-cancel-order`, `change-table` and `drop-location-type`.
+You ended up having 4 branches in the chain, each dependent on the previous one: `adjust-reads-prec`, `block-cancel-order`, `change-table` and `drop-location-type`.
 
-Now for the sake of providing a full-fledged example, let's also add a couple of other branches (not related to the 4-branch chain) into our scenario.
+Now for the sake of providing a full-fledged example, let's also add a couple of other branches (not related to the 4-branch chain) to our scenario.
 Let's assume you also independently developed a feature `edit-margin-not-allowed` and later derived a branch `full-load-gatling` from that point.
-Also, you created a branch `grep-errors-script` that (fortunately!) nothing depended on, and a `hotfix/remove-trigger` branch, but on the top of `master`, not `develop`.
+Also, you created a branch `grep-errors-script` that (fortunately!) nothing depended on, and a `hotfix/remove-trigger` branch, but on top of `master`, not `develop`.
 
-Now the problem: how to quickly check now which of our branches are in sync with their parent (aka upstream) branches?
-Note that for some of them (like `adjust-reads-prec` or `hotfix/remove-trigger`) this parent would be simply `develop` or `master`, but for others (like `change-table`) this would be another topic branch.
+Now the problem: how to quickly check which of our branches are in sync with their parent (aka upstream) branches?
+Note that for some of them (like `adjust-reads-prec` or `hotfix/remove-trigger`) this parent would simply be `develop` or `master`, but for others (like `change-table`) this would be another topic branch.
 Also, how to easily rebase each branch on the top of its parent, especially when dependencies between branches have changed from the description above, or some branches have been deleted, and so on?
 
 
