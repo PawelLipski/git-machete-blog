@@ -68,8 +68,13 @@ Now we've defined the structure of how the branches should relate to each other.
 Unfortunately, some of the branches aren't really in sync with the defined structure.
 For example, a few pull requests from other team members were merged into `develop` in the meantime,
 so `adjust-reads-prec`, `edit-margin-not-allowed` and `grep-errors-script` now need to be synced with `develop` (we'll possibly have to solve some conflicts during the rebase, but that's irrelevant for our discussion).
-Also, our PRs for `adjust-reads-prec` and `change-table` received a couple of comments which we then fixed on separate commits,
+Also, our PRs for `adjust-reads-prec` and `change-table` received a couple of further comments which we then fixed on separate commits,
 thus throwing `block-cancel-order` and `drop-location-type`, respectively, out of sync with their upstream branches.
+
+Let's see how the state of the repo looks in a graphical tool like `gitk`:
+
+![gitk](gitk-1.png)
+
 And... this is exactly the _jungle_ in which `git machete` comes to the rescue.
 
 
@@ -125,9 +130,11 @@ Let's go down the git jungle (with a handy shortcut `git machete go down`) and r
 ![Update 3 branches one by one](update-2.png)
 
 We see that now all the 4 branches in the longest chain are synced to each other and to `develop`.
-In fact, we can also see the commit history with a graphical tool (here we use the TUI-ish `tig`, but it could also be `gitk`, `gitg` or IntelliJ's git tools) to confirm that all branches are neatly lined up.
+Let's confirm (with `gitk`) that all branches are neatly lined up:
 
-![tig output](tig.png)
+![gitk](gitk-2.png)
+
+Of course we'd still need to sync `edit-margin-not-allowed`, `full-load-gatling` and `grep-errors-script` to `develop`... but the process would be pretty similar to what we just did before.
 
 As the cherry on top, let's now assume somebody that we need to merge the `change-table` branch to `develop` as soon as possible
 and we can't wait for `adjust-reads-prec` and `block-cancel-order` to get merged first.
