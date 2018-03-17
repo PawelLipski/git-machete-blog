@@ -29,6 +29,9 @@ Now for the sake of providing a full-fledged example, let's also add a couple of
 Let's assume you also independently developed a feature `edit-margin-not-allowed` and later derived a branch `full-load-gatling` from that point.
 Also, you created a branch `grep-errors-script` that (fortunately!) nothing depended on, and a `hotfix/remove-trigger` branch, but on top of `master`, not `develop`.
 
+If you'd like to quickly recreate this repository state on your local machine, you can use [this handy script](https://raw.githubusercontent.com/PawelLipski/git-machete-blog/master/sandbox-setup.sh),
+which will set it up in `machete-sandbox` directory in your home folder.
+
 Now the problem: how to quickly check which of the branches are in sync with their parent (aka upstream) branches?
 Note that for some of them (like `adjust-reads-prec` or `hotfix/remove-trigger`) this parent would simply be `develop` or `master`, but for others (like `change-table`) this would be another topic branch.
 Also, how to easily rebase each branch on the top of its parent, especially when dependencies between branches have changed from the description above, or some branches have been deleted, and so on?
@@ -65,7 +68,9 @@ just as defined verbally earlier in the post.
 Now you've defined the structure of how the branches should relate to each other.
 Unfortunately, some of the branches aren't really in sync with the defined structure.
 For example, a few pull requests from other team members were merged into `develop` in the meantime,
-so `adjust-reads-prec`, `edit-margin-not-allowed` and `grep-errors-script` now need to be synced with `develop` (you'll possibly have to solve some conflicts during the rebase, but that's irrelevant for our discussion).
+so `adjust-reads-prec`, `edit-margin-not-allowed` and `grep-errors-script` now need to be synced with `develop`
+(you'll possibly have to solve some conflicts during the rebase, but that's irrelevant for our discussion).
+
 Also, your PRs for `adjust-reads-prec` and `change-table` received a couple of further comments which you then fixed on separate commits,
 thus throwing `block-cancel-order` and `drop-location-type`, respectively, out of sync with their upstream branches.
 
@@ -79,7 +84,7 @@ And... this is exactly the _jungle_ in which `git machete` comes to the rescue.
 ## What's macheting really about... `status`, `go` and `update`
 
 
-Let's now run `git machete status` to see the actual current state of which branches are synced with their upstreams and which ones aren't:
+Let's now run `git machete status` to see the current state of which branches are synced with their upstreams and which ones aren't:
 
 ![git machete status](status-1.png)
 
@@ -157,7 +162,7 @@ master
 When you modified the definition file, `git machete status` marked the edge between `develop` and `change-table` as yellow.
 This means that the downstream branch (`change-table`) is still in sync with the upstream (`develop`), but the upstream branch tip isn't the fork point of the downstream branch.
 Translating from _git-ese_ to English, there are probably commits from some other branches on the way between `develop` and `change-table`;
-this is exactly the case now (there are commits originating on `adjust-reads-prec` and `block-cancel-order`).
+this is exactly the case now (there are indeed commits originating on `adjust-reads-prec` and `block-cancel-order`).
 You won't come across the yellow edges very often in day-to-day work with `git machete` - it mostly happens when the tree structure has been surgically modified, as you did just a moment ago.
 
 Anyway, since the edge is not green as it should be, you can now run `git machete update` to rebase `change-table` directly onto `develop`.
@@ -220,7 +225,7 @@ As a general parting thought, if anything goes wrong during the rebase, always r
 
 The fork point commit (the commit at which the history of the branch diverges from the history of any other branch) is determined with a heuristics that uses `git reflog`.
 The *commit-wise* history (aka `git log`) of the given branch is compared with the *operation-wise* history (aka `git reflog`) of all other local branches.
-Roughly speaking, the most recent commit `C` from the log of branch `x` that also happens to appear on the reflog of any other local branch `y` is considered the _fork point_ of branch `x`.
+Roughly speaking, the most recent commit `C` from the log of branch `x` that also happens to appear on the reflog of any other local branch `y` is considered the fork point of branch `x`.
 Intuitively, the fact that `C` was found somewhere in the reflog of `y` suggests that it was originally committed on `y` and not on `x`
 (even though it might no longer appear on `y`'s log due to e.g. rebases or commit amendments).
 
