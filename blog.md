@@ -29,7 +29,7 @@ Now for the sake of providing a full-fledged example, let's also add a couple of
 Let's assume you also independently developed a feature `edit-margin-not-allowed` and later derived a branch `full-load-gatling` from that point.
 Also, you created a branch `grep-errors-script` that (fortunately!) nothing depended on, and a `hotfix/remove-trigger` branch, but on top of `master`, not `develop`.
 
-If you'd like to quickly recreate this repository state on your local machine, you can use [this handy script](https://raw.githubusercontent.com/PawelLipski/git-machete-blog/master/sandbox-setup.sh),
+If you'd like to quickly recreate this repository state on your local machine, you can use [this handy script (link)](https://raw.githubusercontent.com/PawelLipski/git-machete-blog/master/sandbox-setup.sh),
 which will set it up in `machete-sandbox` directory in your home folder.
 
 Now the problem: how to quickly check which of the branches are in sync with their parent (aka upstream) branches?
@@ -40,7 +40,13 @@ Also, how to easily rebase each branch on the top of its parent, especially when
 ## Defining a structure for the branches (`edit` subcommand)
 
 
-Okey, let's get our hands dirty... first install `git-machete` with a `curl` one-liner that you can find in the README of [the git machete repo](https://github.com/PawelLipski/git-machete).
+Okey, let's get our hands dirty... first install `git-machete` with a `curl` one-liner that you can also find in the README of
+[the git machete repo (github.com/PawelLipski/git-machete)](https://github.com/PawelLipski/git-machete).
+
+```bash
+curl -L https://raw.githubusercontent.com/PawelLipski/git-machete/master/install.sh | sudo sh
+```
+
 This will copy the `git-machete` Python 2.7 executable to `/usr/local/bin` and set up a corresponding Bash completion script in `/etc/bash_completion.d`.
 
 Once you have `git-machete` in your executable `PATH` (and thus git already recognizes the `machete` subcommand), let's specify how you would like to organize your branches - basically, what depends on what.
