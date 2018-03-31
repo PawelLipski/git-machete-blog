@@ -40,11 +40,13 @@ Also, how to easily rebase each branch on the top of its parent, especially when
 ## Defining a structure for the branches (`edit` subcommand)
 
 
-Okey, let's get our hands dirty... first install `git-machete` with a `curl` one-liner that you can also find in the README of
+Okey, let's get our hands dirty... first install `git-machete` with the following sequence of commands that you can also find in the README of
 [the git machete repo (github.com/PawelLipski/git-machete)](https://github.com/PawelLipski/git-machete).
 
 ```bash
-curl -L https://raw.githubusercontent.com/PawelLipski/git-machete/master/install.sh | sudo sh
+$ git clone https://github.com/PawelLipski/git-machete.git
+$ cd git-machete
+$ sudo make install
 ```
 
 This will copy the `git-machete` Python 2.7 executable to `/usr/local/bin` and set up a corresponding Bash completion script in `/etc/bash_completion.d`.
