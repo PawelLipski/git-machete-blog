@@ -20,6 +20,10 @@ So you forked a new branch (`block-cancel-order`) off `adjust-reads-prec` and, w
 In the meantime, reviewers posted their comments on the first PR.
 You applied their remarks as a `1st round of fixes` commit on the `adjust-reads-prec` branch.
 
+Let's see how the state of the repo looks in a graphical tool like `gitk`:
+
+![gitk](gitk-0.png)
+
 In most cases it's rather unusual to have more than 2 branches stacked on top of each other, but for the sake of completeness let's now make this chain longer.
 You developed a couple of new refactors and bug fixes - say, on branches `change-table` and `drop-location-type`.
 As each of them was dependent on changes already waiting in the review queue, you began stacking another branches on top of each other.
@@ -82,7 +86,7 @@ so `adjust-reads-prec`, `edit-margin-not-allowed` and `grep-errors-script` now n
 Also, your PRs for `adjust-reads-prec` and `change-table` received a couple of further comments which you then fixed on separate commits,
 thus throwing `block-cancel-order` and `drop-location-type`, respectively, out of sync with their upstream branches.
 
-Let's see how the state of the repo looks in a graphical tool like `gitk`:
+Let's see how the state of the repo looks now:
 
 ![gitk](gitk-1.png)
 
