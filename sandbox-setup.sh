@@ -71,11 +71,11 @@ cmt 2nd round of fixes
 git checkout change-table
 cmt 1st round of fixes
 
+git branch -d root
+
 echo
 echo
 git machete status $1
 echo
 echo
-
-gitk --all
 

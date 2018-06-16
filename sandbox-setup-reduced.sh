@@ -33,5 +33,3 @@ git checkout adjust-reads-prec
 
 git branch -d root
 
-gitk develop adjust-reads-prec block-cancel-order
-
