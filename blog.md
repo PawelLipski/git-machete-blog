@@ -45,10 +45,10 @@ Also, how to easily rebase each branch on the top of its parent, especially when
 
 
 Okey, let's get our hands dirty... first install `git-machete` with the following sequence of commands that you can also find in the README of
-[the git machete repo (github.com/PawelLipski/git-machete)](https://github.com/PawelLipski/git-machete).
+[the git machete repo (github.com/VirtusLab/git-machete)](https://github.com/VirtusLab/git-machete).
 
 ```bash
-$ git clone https://github.com/PawelLipski/git-machete.git
+$ git clone https://github.com/VirtusLab/git-machete.git
 $ cd git-machete
 $ sudo make install
 ```
