@@ -154,7 +154,7 @@ Of course you'll still need to sync `edit-margin-not-allowed`, `full-load-gatlin
 As the cherry on top, let's now assume that you need to merge the `change-table` branch to `develop` as soon as possible
 and you can't wait for `adjust-reads-prec` and `block-cancel-order` to get merged first.
 Unfortunately, the two mentioned upstream branches introduced some nice helpers that you later used in `change-table`.
-To make the process as painless as possible, let's modify the definition file with `git ladder edit`:
+To make the process as painless as possible, let's modify the definition file with `git machete edit`:
 
 ```
 develop
